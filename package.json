@@ -1,0 +1,15 @@
+{
+  "name": "proxiani-chat-server",
+  "version": "1.0.0",
+  "description": "Chat server for Proxiani",
+  "main": "./src/main.js",
+  "author": "Martin Storsletten",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./src/main.js -q"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tms88/proxiani.git"
+  }
+}
