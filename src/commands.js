@@ -152,6 +152,10 @@ const commands = {
    else return client.write(`Found nobody by that name.\n`);
   }
  },
+ ping: function({ client, argstr }) {
+  const identifier = argstr && argstr.trim();
+  client.write(`Pong!${identifier ? ` ${identifier}` : ''}\n`);
+ },
  pm: function({ client, argstr }) {
   const data = argstr && argstr.match(/^\s*([^\s]+)(\s+(.+))?$/);
   if (!data) return client.write(`Send a private message to who?\n`);
