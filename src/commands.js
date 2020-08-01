@@ -22,6 +22,7 @@ const adminHelpTopics = {
  ua: `The UA command lets you add a new user. Syntax: ua <name> [<password>]`,
  ud: `The UD command lets you demote a user to a regular user. Syntax: ud <name>`,
  ui: `The UI command lets you view information about a user. Syntax: ui <name>`,
+ ul: `The UL command displays a list of users. Syntax: ul [<partial matching names>]`,
  un: `The UN command lets you set a new name for a user. Syntax: un <name> <new name>`,
  up: `The UP command lets you promote a user to become an admin. Syntax: up <name>`,
  ur: `The UR command lets you remove a user. Syntax: ur <name>`,
@@ -225,6 +226,13 @@ const commands = {
   client.write(`${user.name} is no longer an admin.\n`);
   this.sendMessage({ channel: 'admin', from: 'System', message: `${client.user.name} demoted ${user.name}.`, excludedClients: [client] });
   this.updateConfigFile();
+ },
+ ul: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  const data = argstr && argstr.trim().toLowerCase();
+  const users = data ? Object.keys(this.users).filter(username => username.toLowerCase().indexOf(data) !== -1) : Object.keys(this.users);
+  if (users.length === 0) return client.write(`Found no users${data ? ' that match' : ''}.\n`);
+  client.write(`Found the following users: ${users.sort().join(', ')}.\n`);
  },
  un: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
