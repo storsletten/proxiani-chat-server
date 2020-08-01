@@ -10,7 +10,7 @@ class Server extends net.Server {
   this.config = require('./config.js');
   this.users = this.config.users;
   this.systemChannels = ['connected', 'disconnected', 'system'];
-  this.adminChannels = ['admin', 'administrator', 'administrators'];
+  this.adminChannels = ['admin', 'administrator', 'administrators', 'error', 'debug'];
   this.connectedClients = new Set();
   this.authorizedClients = new Set();
   this.authorizePrompt = `Who's there?\n`;
@@ -41,6 +41,7 @@ class Server extends net.Server {
   encoding && client.setEncoding(encoding);
   client.bufferedData = '';
   this.authorize({ client }).then(({ user }) => this.handleAuthorizedConnection({ client, user })).catch(({ message }) => {
+   this.sendMessage({ channel: 'debug', message: `Authentication failed: ${message}` });
    if (!client.destroyed) client.destroy();
   });
  }
@@ -221,7 +222,7 @@ class Server extends net.Server {
   if (to) {
    const data = `${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}\n`;
    if (from) {
-    from.write(`[PM | ${to.user.name}] You${data}`);
+    from.write(`[PM | ${to.user.name}] ${from.user.name}${data}`);
     to.write(`[PM | ${from.user.name}] ${from.user.name}${data}`);
    } else {
     to.write(`[PM | System] Server${data}`);

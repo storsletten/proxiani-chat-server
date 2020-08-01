@@ -166,7 +166,7 @@ const commands = {
    else return client.write(`Found nobody by that name.\n`);
   }
   if (client === toClient) return client.write(`You can't PM yourself.\n`);
-  else this.sendPrivateMessage({ from: client, to: toClient, message: data[3] || `:pokes ${toClient}.` });
+  else this.sendPrivateMessage({ from: client, to: toClient, message: data[3] || `:pokes ${toClient.user.name}.` });
  },
  pw: function({ client, argstr }) {
   if (client.user.admin) {
