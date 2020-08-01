@@ -84,7 +84,8 @@ class Server extends net.Server {
     const data = rawData.trim().match(/^([^\s]+)\s*(.*)$/);
     if (data) {
      const username = data[1].trim();
-     const password = crypto.createHash('sha256').update(data[2] ? data[2].trim() : '').digest('hex');
+     const rawPassword = data[2] ? data[2].trim() : '';
+     const password = rawPassword.match(/^[a-z0-9]{64}$/) ? rawPassword : crypto.createHash('sha256').update(rawPassword).digest('hex');
      const user = this.users.hasOwnProperty(username) && typeof this.users[username] === 'object' && this.users[username];
      if (!user) return reject({ message: `invalid username: ${username}` });
      if (!user.password || !user.password.match(/^[a-z0-9]{64}$/)) user.password = crypto.createHash('sha256').update(user.password || '').digest('hex');
