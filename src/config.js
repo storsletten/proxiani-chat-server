@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const defaultConfig = {
- path: `../config.json`,
+ path: `./config.json`,
  listen: {
   port: 1235,
  },
