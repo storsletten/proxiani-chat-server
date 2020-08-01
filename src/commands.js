@@ -190,6 +190,10 @@ const commands = {
  si: function({ client }) {
   client.write(`The server has been up since ${this.startdate.toString()}.\n`);
  },
+ ss: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  this.shutdown({ client, reason: argstr && argstr.trim() });
+ },
  ua: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
   const data = argstr && argstr.match(/^\s*([^\s]+)(\s+(.+))?$/);

@@ -11,6 +11,7 @@ class Server extends net.Server {
   this.users = this.config.users;
   this.systemChannels = ['connected', 'disconnected', 'system'];
   this.adminChannels = ['admin', 'administrator', 'administrators'];
+  this.connectedClients = new Set();
   this.authorizedClients = new Set();
   this.authorizePrompt = `Who's there?\n`;
   this.authorizeTimeout = 30000;
@@ -35,6 +36,8 @@ class Server extends net.Server {
   client,
   encoding = this.encoding,
  }) {
+  this.connectedClients.add(client);
+  client.on('close', () => this.connectedClients.delete(client));
   encoding && client.setEncoding(encoding);
   client.bufferedData = '';
   this.authorize({ client }).then(({ user }) => this.handleAuthorizedConnection({ client, user })).catch(({ message }) => {
@@ -101,6 +104,20 @@ class Server extends net.Server {
     delete eventListeners[eventName];
    }
   });
+ }
+
+ shutdown({
+  client,
+  reason,
+ } = {}) {
+  if (client) {
+   client.write(`Shutting down the server...\n`);
+   this.sendMessage({ channel: 'system', from: client, message: `:unceremoniously shuts down the server.${reason ? ` Reason: ${reason}` : ''}`, excludedClients: [client] });
+  } else {
+   this.sendMessage({ channel: 'system', message: `Server shutting down.${reason ? ` Reason: ${reason}` : ''}` });
+  }
+  this.close();
+  this.connectedClients.forEach(xClient => xClient.destroy());
  }
 
  getUser(username) {
