@@ -185,6 +185,11 @@ class Server extends net.Server {
   data = data.split("\n");
   client.bufferedData = data[data.length - 1];
   if (data.length > 1) data.slice(0, -1).forEach(command => command && this.parseClientCommand({ client, command }));
+  else if (client.bufferedData.length > 2000000) {
+   client.bufferedData = '';
+   client.write(`*** Exceeded max command length ***`);
+   client.destroy();
+  }
  }
 
  parseClientCommand({
