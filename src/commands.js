@@ -44,6 +44,7 @@ const commands = {
    connectedClient.user.banned = bandata;
    client.write(`You ban ${connectedClient.user.name} and they've been kicked off the server.\n`);
    connectedClient.write(`You have been banned by ${client.user.name}.\n`);
+   connectedClient.write(`PCS: Disconnect\n`);
    this.sendMessage({ channel: 'admin', from: 'System', message: `${client.user.name} bans ${connectedClient.user.name} and kicked them off the server.${data[3] ? ` Reason: ${data[3]}` : ''}`, excludedClients: [client, connectedClient] });
    connectedClient.destroy();
   } else {
@@ -144,6 +145,7 @@ const commands = {
    if (connectedClient === client) return client.write(`You can't kick yourself. Please use the Q command instead if you wish to disconnect from the server.\n`);
    client.write(`You kick ${connectedClient.user.name} off the server.\n`);
    connectedClient.write(`You have been kicked off the server by ${client.user.name}.${data[3] ? ` Reason: ${data[3]}` : ''}\n`);
+   connectedClient.write(`PCS: Disconnect\n`);
    this.sendMessage({ channel: 'admin', from: 'System', message: `${client.user.name} kicks ${connectedClient.user.name} off the server.${data[3] ? ` Reason: ${data[3]}` : ''}`, excludedClients: [client, connectedClient] });
    connectedClient.destroy();
   } else {
