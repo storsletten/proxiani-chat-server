@@ -4,7 +4,7 @@ const helpTopics = {
  cm: `The CM command sends a message on a channel. Syntax: cm <channel name> [<message>]`,
  cs: `The CS command lets you subscribe to a channel. Syntax: cs [<channel name>]`,
  cu: `The CU command lets you unsubscribe from a channel. Syntax: cu <channel name>`,
- cw: `the CW command lets you see who is tuned in to a channel. Syntax: cw <channel name>`,
+ cw: `the CW command lets you see who is watching a channel that you are subscribed to. Syntax: cw <channel name>`,
  help: `The H command lets you see help topics. Syntax: h [<topic name>]`,
  pm: `The PM command sends a private message to another user. Syntax: pm <recipient name> [<message>]`,
  pw: `The PW command lets you change your password. Syntax: pw [<password>]`,
@@ -15,6 +15,7 @@ const helpTopics = {
 
 const adminHelpTopics = {
  ban: `The B command lets you ban or unban a user. Syntax: b <name> [<reason>]. If reason is not provided and the user is already banned, then the user will be unbanned.`,
+ cw: `the CW command lets you see who is watching a channel. Syntax: cw <channel name>`,
  kick: `The K command lets you kick another user off the server. Syntax: k <name> [<reason>]`,
  pw: `The PW command lets you set a new password for a user. Syntax: pw <name> [<password>]`,
  // sr: `The SR command lets you restart the server. Syntax: sr [<reason>]`,
@@ -105,21 +106,30 @@ const commands = {
   client.write(`Found no such channel that you can unsubscribe from.\n`);
  },
  cw: function({ client, argstr }) {
-  if (client.user.channels.length === 0) return client.write(`You are not subscribed to any channels.\n`);
   const lcChannel = argstr && argstr.trim().toLowerCase();
-  if (!lcChannel) return client.write(`Which channel do you wish to see who's currently subscribed to?\n`);
-  for (let i=0; i<client.user.channels.length; i++) {
-   const channel = client.user.channels[i];
-   if (channel.startsWith(lcChannel) && !this.systemChannels.includes(channel)) {
-    const users = [];
-    for (let xClient of this.authorizedClients) {
-     if (xClient.user.channels.includes(channel)) users.push(xClient.user.name);
-    }
-    if (users.length === 0) return client.write(`Nobody is currently watching the ${channel} channel.\n`);
-    else return client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${channel} channel: ${users.sort().join(', ')}.\n`);
+  if (!lcChannel) return client.write(`Which channel do you wish to see who's currently watching?\n`);
+  if (client.user.admin) {
+   const users = [];
+   for (let xClient of this.authorizedClients) {
+    if (xClient.user.channels.includes(lcChannel)) users.push(xClient.user.name);
    }
+   if (users.length === 0) client.write(`Nobody is watching the ${lcChannel} channel.\n`);
+   else client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${lcChannel} channel: ${users.sort().join(', ')}.\n`);
+  } else {
+   if (client.user.channels.length === 0) return client.write(`You are not subscribed to any channels.\n`);
+   for (let i=0; i<client.user.channels.length; i++) {
+    const channel = client.user.channels[i];
+    if (channel.startsWith(lcChannel) && !this.systemChannels.includes(channel)) {
+     const users = [];
+     for (let xClient of this.authorizedClients) {
+      if (xClient.user.channels.includes(channel)) users.push(xClient.user.name);
+     }
+     if (users.length === 0) return client.write(`Nobody is currently watching the ${channel} channel.\n`);
+     else return client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${channel} channel: ${users.sort().join(', ')}.\n`);
+    }
+   }
+   client.write(`You are not subscribed to that channel.\n`);
   }
-  client.write(`Found no such channel that you can check who's tuned in to.\n`);
  },
  h: function({ client, argstr }) {
   const data = argstr && argstr.trim().toLowerCase();
@@ -270,10 +280,10 @@ const commands = {
   const data = argstr && argstr.match(/^\s*([^\s]+)\s+([^\s]+)\s*$/);
   if (!data) return client.write(`Syntax: un <name> <new name>\n`);
   const user = this.findUser({ name: data[1], exactMatch: true });
-  if (!user) return client.write(`Found no user that exactly matches ${data[1]}.`);
+  if (!user) return client.write(`Found no user that exactly matches ${data[1]}.\n`);
   if (user.name === data[2]) return client.write(`No change.\n`);
   const existingUser = this.findUser({ name: data[2], exactMatch: true });
-  if (existingUser && existingUser !== user) return client.write(`There is already a user named ${data[2]}.`);
+  if (existingUser && existingUser !== user) return client.write(`There is already a user named ${data[2]}.\n`);
   for (let username in this.users) {
    if (this.users[username] === user) {
     const oldName = this.users[username].name || username;
