@@ -189,7 +189,7 @@ const commands = {
   this.updateConfigFile();
  },
  q: function({ client }) {
-  client.write(`Goodbye.\n*** Disconnected ***\n`);
+  client.write(`PCS: Disconnect\n`);
   client.destroy();
  },
  si: function({ client }) {

@@ -7,13 +7,14 @@ class Server extends net.Server {
  constructor() {
   super();
   this.startdate = new Date();
+  this.metadata = require('../package.json');
+  this.version = this.metadata.version.split('.').map(v => parseInt(v));
   this.config = require('./config.js');
   this.users = this.config.users;
   this.systemChannels = ['connected', 'disconnected', 'system'];
   this.adminChannels = ['admin', 'administrator', 'administrators', 'error', 'debug'];
   this.connectedClients = new Set();
   this.authorizedClients = new Set();
-  this.authorizePrompt = `Who's there?\n`;
   this.authorizeTimeout = 30000;
   this.encoding = 'utf8';
   this.on('connection', client => this.handleConnection({ client }));
@@ -53,15 +54,14 @@ class Server extends net.Server {
   client.user = user;
   const existingClient = this.findConnectedUser({ name: user.name, exactMatch: true });
   if (existingClient) {
-   existingClient.write(`*** Switching your session to a new port ***\n`);
+   existingClient.write(`PCS: Switching your session to a new port\n`);
    existingClient.destroySilently = true;
    existingClient.destroy();
-   client.write(`*** Reconnected ***\n`);
    this.sendMessage({ channel: 'connected', message: `${user.name} reconnected.` });
   } else {
-   client.write(`*** Connected ***\n`);
    this.sendMessage({ channel: 'connected', message: `${user.name} connected.` });
   }
+  client.write(`PCS: Authorized\n`);
   this.authorizedClients.add(client);
   client.on('data', data => this.parseClientData({ client, data }));
   client.on('close', () => {
@@ -73,21 +73,20 @@ class Server extends net.Server {
 
  authorize({
   client,
-  prompt = this.authorizePrompt,
   timeout = this.authorizeTimeout,
  }) {
   const eventListeners = {};
   typeof timeout === 'number' && client.setTimeout(timeout);
   return new Promise((resolve, reject) => {
-   prompt && client.write(prompt);
+   client.write(`PCS: ${this.version[0]}\n`);
    eventListeners['data'] = rawData => {
     const data = rawData.trim().match(/^([^\s]+)\s*(.*)$/);
     if (data) {
      const username = data[1].trim();
+     const user = this.users.hasOwnProperty(username) && this.users[username];
+     if (!user) return reject({ message: `invalid username: ${username}` });
      const rawPassword = data[2] ? data[2].trim() : '';
      const password = rawPassword.match(/^[a-z0-9]{64}$/) ? rawPassword : crypto.createHash('sha256').update(rawPassword).digest('hex');
-     const user = this.users.hasOwnProperty(username) && typeof this.users[username] === 'object' && this.users[username];
-     if (!user) return reject({ message: `invalid username: ${username}` });
      if (!user.password || !user.password.match(/^[a-z0-9]{64}$/)) user.password = crypto.createHash('sha256').update(user.password || '').digest('hex');
      if (user.password !== password) return reject({ message: `invalid password for ${username}: ${data[2].trim()}` });
      if (user.banned) return reject({ message: `user banned: ${username}` });
