@@ -73,7 +73,7 @@ const commands = {
   for (let i=0; i<client.user.channels.length; i++) {
    if (client.user.channels[i].startsWith(lcChannel) && !this.systemChannels.includes(client.user.channels[i])) return this.sendMessage({ channel: client.user.channels[i], from: client, message: data[3] || `:makes some noise.` });
   }
-  client.write(`Found no such channel that you can send a message to.\n`);
+  client.write(`You are not subscribed to that channel.\n`);
  },
  cs: function({ client, argstr }) {
   const lcChannel = argstr && argstr.trim().toLowerCase();
@@ -249,7 +249,7 @@ const commands = {
   const data = argstr && argstr.trim();
   if (!data) return client.write(`Syntax: ui <name>\n`);
   const user = this.findUser({ name: data });
-  if (!user) return client.write(`Found no such user.\n`);
+  if (!user) return client.write(`User not found.\n`);
   const info = [];
   info.push(user.name);
   for (let xClient of this.authorizedClients) {
