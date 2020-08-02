@@ -39,6 +39,7 @@ class Server extends net.Server {
  }) {
   this.connectedClients.add(client);
   client.on('close', () => this.connectedClients.delete(client));
+  client.on('error', err => undefined);
   encoding && client.setEncoding(encoding);
   client.bufferedData = '';
   this.authorize({ client }).then(({ user }) => this.handleAuthorizedConnection({ client, user })).catch(({ message }) => {
