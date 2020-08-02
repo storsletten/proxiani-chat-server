@@ -70,6 +70,7 @@ const commands = {
   const data = argstr && argstr.match(/^\s*([^\s]+)(\s+(.+))?$/);
   if (!data) return client.write(`Send a message on which channel?\n`);
   const lcChannel = data[1].toLowerCase();
+  if (this.systemChannels.includes(lcChannel) && client.user.channels.includes(lcChannel)) return client.write(`That channel is reserved for system notifications.\n`);
   for (let i=0; i<client.user.channels.length; i++) {
    if (client.user.channels[i].startsWith(lcChannel) && !this.systemChannels.includes(client.user.channels[i])) return this.sendMessage({ channel: client.user.channels[i], from: client, message: data[3] || `:makes some noise.` });
   }
