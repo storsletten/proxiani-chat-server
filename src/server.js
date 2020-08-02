@@ -1,15 +1,17 @@
 const crypto = require('crypto');
 const fs = require('fs');
-const net = require('net');
+const config = require('./config.js');
 const commands = require('./commands.js');
 
-class Server extends net.Server {
+const ServerBase = config.tls ? require('tls').Server : require('net').Server;
+ 
+class Server extends ServerBase {
  constructor() {
   super();
   this.startdate = new Date();
   this.metadata = require('../package.json');
   this.version = this.metadata.version.split('.').map(v => parseInt(v));
-  this.config = require('./config.js');
+  this.config = config;
   this.users = this.config.users;
   this.systemChannels = ['connected', 'disconnected', 'system'];
   this.adminChannels = ['admin', 'administrator', 'administrators', 'error', 'debug'];
@@ -44,7 +46,10 @@ class Server extends net.Server {
   client.bufferedData = '';
   this.authorize({ client }).then(({ user }) => this.handleAuthorizedConnection({ client, user })).catch(({ message }) => {
    this.sendMessage({ channel: 'debug', message: `Authentication failed from ${client.address().address}: ${message}` });
-   if (!client.destroyed) client.destroy();
+   if (!client.destroyed) {
+    client.write(`PCS: Disconnect\n`);
+    client.destroy();
+   }
   });
  }
 
@@ -122,6 +127,7 @@ class Server extends net.Server {
   }
   this.close();
   this.connectedClients.forEach(xClient => xClient.destroy());
+  this.updateConfigFile();
  }
 
  getUser(username) {
