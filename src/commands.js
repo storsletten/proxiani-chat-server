@@ -233,6 +233,24 @@ const commands = {
   this.sendMessage({ channel: 'admin', from: 'System', message: `${client.user.name} demoted ${user.name}.`, excludedClients: [client] });
   this.updateConfigFile();
  },
+ ui: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  const data = argstr && argstr.trim();
+  if (!data) return client.write(`Syntax: ui <name>\n`);
+  const user = this.findUser({ name: data });
+  if (!user) return client.write(`Found no such user.\n`);
+  const info = [];
+  info.push(`Name: ${user.name}`);
+  info.push(`Admin: ${user.admin ? 'Yes' : 'No'}`);
+  if (user.banned) {
+   info.push(`Banned: Yes`);
+   if (user.banned.by) info.push(`Banned by: ${user.banned.by}`);
+   if (user.banned.time) info.push(`Banned since: ${(new Date(user.banned.time)).toString()}`);
+   if (user.banned.reason) info.push(`Ban reason: ${user.banned.reason}`);
+  }
+  else info.push(`Banned: No`);
+  client.write(`${info.join("\n")}\n`);
+ },
  ul: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
   const data = argstr && argstr.trim().toLowerCase();
