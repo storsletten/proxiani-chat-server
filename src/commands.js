@@ -261,6 +261,7 @@ const commands = {
    }
   }
   info.push(`  Admin: ${user.admin ? 'Yes' : 'No'}`);
+  info.push(`  Channels: ${user.channels.sort().join(', ')}`);
   if (user.banned) {
    info.push(`  Banned: Yes`);
    if (user.banned.by) info.push(`  Banned by: ${user.banned.by}`);
