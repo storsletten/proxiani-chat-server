@@ -76,7 +76,7 @@ const commands = {
  },
  cs: function({ client, argstr }) {
   const lcChannel = argstr && argstr.trim().toLowerCase();
-  if (!lcChannel) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to the following channels: ${client.user.channels.sort().join(', ')}.\n`);
+  if (!lcChannel) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
   else if (!lcChannel.match(/^[a-z0-9]{1,50}$/)) return client.write(`Channel names can only contain letters and numbers, and must not exceed 50 characters.\n`);
   else if (!client.user.admin && this.adminChannels.includes(lcChannel)) return client.write(`You don't have sufficient privileges to subscribe to that channel.\n`);
   const i = client.user.channels.indexOf(lcChannel);
@@ -91,7 +91,7 @@ const commands = {
  },
  cu: function({ client, argstr }) {
   const lcChannel = argstr && argstr.trim().toLowerCase();
-  if (!lcChannel) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to the following channels: ${client.user.channels.sort().join(', ')}.\n`);
+  if (!lcChannel) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
   for (let i=0; i<client.user.channels.length; i++) {
    const channel = client.user.channels[i];
    if (lcChannel === channel || (channel.startsWith(lcChannel) && !this.systemChannels.includes(channel))) {
@@ -115,7 +115,8 @@ const commands = {
     for (let xClient of this.authorizedClients) {
      if (xClient.user.channels.includes(channel)) users.push(xClient.user.name);
     }
-    return client.write(`The following connected users are subscribed to ${channel}: ${users.sort().join(', ')}.\n`);
+    if (users.length === 0) return client.write(`Nobody is currently watching the ${channel} channel.\n`);
+    else return client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${channel} channel: ${users.sort().join(', ')}.\n`);
    }
   }
   client.write(`Found no such channel that you can check who's tuned in to.\n`);
@@ -256,7 +257,7 @@ const commands = {
   const data = argstr && argstr.trim().toLowerCase();
   const users = data ? Object.keys(this.users).filter(username => username.toLowerCase().indexOf(data) !== -1) : Object.keys(this.users);
   if (users.length === 0) return client.write(`Found no users${data ? ' that match' : ''}.\n`);
-  client.write(`Found the following users: ${users.sort().join(', ')}.\n`);
+  client.write(`Found ${users.length === 1 ? '1 user' : `${users.length} users`}: ${users.sort().join(', ')}.\n`);
  },
  un: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
@@ -313,7 +314,7 @@ const commands = {
  },
  w: function({ client, argstr }) {
   const data = argstr && argstr.trim();
-  if (!data) return client.write(`The following users are currently connected: ${Array.from(this.authorizedClients).map(xClient => xClient.user.name).sort().join(', ')}.\n`);
+  if (!data) return client.write(`${this.authorizedClients.size === 1 ? 'One user is' : `${this.authorizedClients.size} users are`} currently connected: ${Array.from(this.authorizedClients).map(xClient => xClient.user.name).sort().join(', ')}.\n`);
   const connectedClient = this.findConnectedUser({ name: data });
   if (connectedClient) return client.write(`${connectedClient.user.name} is connected.\n`);
   const user = this.findUser({ name: data });
