@@ -206,6 +206,7 @@ const commands = {
   client.destroy();
  },
  si: function({ client }) {
+  client.write(`${this.metadata.name} version ${this.metadata.version}.\n`);
   client.write(`The server has been up since ${this.startdate.toString()}.\n`);
  },
  ss: function({ client, argstr }) {
