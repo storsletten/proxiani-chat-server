@@ -253,14 +253,13 @@ const commands = {
   const user = this.findUser({ name: data });
   if (!user) return client.write(`User not found.\n`);
   const info = [];
-  info.push(user.name);
+  info.push(`${user.name}${user.admin ? ' (admin)' : ''}`);
   for (let xClient of this.authorizedClients) {
    if (xClient.user === user) {
     info.push(`  Connected from: ${xClient.address().address}`);
     break;
    }
   }
-  info.push(`  Admin: ${user.admin ? 'Yes' : 'No'}`);
   info.push(`  Channels: ${user.channels.sort().join(', ')}`);
   if (user.banned) {
    info.push(`  Banned: Yes`);
