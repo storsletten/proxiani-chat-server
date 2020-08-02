@@ -206,7 +206,7 @@ class Server extends net.Server {
  }) {
   const name = (typeof from === 'object' ? from.user.name : from);
   if (channel) {
-   const data = `[${channel}] ${name ? `${name}${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}` : message}\n`;
+   const data = `[CM | ${channel}] ${name ? `${name}${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}` : message}\n`;
    this.authorizedClients.forEach(client => !excludedClients.includes(client) && client.user.channels.includes(channel) && client.write(data));
   } else {
    const data = `${name ? `${name}${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}` : message}\n`;
