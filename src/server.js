@@ -43,7 +43,7 @@ class Server extends net.Server {
   encoding && client.setEncoding(encoding);
   client.bufferedData = '';
   this.authorize({ client }).then(({ user }) => this.handleAuthorizedConnection({ client, user })).catch(({ message }) => {
-   this.sendMessage({ channel: 'debug', message: `Authentication failed: ${message}` });
+   this.sendMessage({ channel: 'debug', message: `Authentication failed from ${client.address().address}: ${message}` });
    if (!client.destroyed) client.destroy();
   });
  }
