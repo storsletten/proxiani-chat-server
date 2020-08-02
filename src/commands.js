@@ -17,7 +17,7 @@ const adminHelpTopics = {
  ban: `The B command lets you ban or unban a user. Syntax: b <name> [<reason>]. If reason is not provided and the user is already banned, then the user will be unbanned.`,
  kick: `The K command lets you kick another user off the server. Syntax: k <name> [<reason>]`,
  pw: `The PW command lets you set a new password for a user. Syntax: pw <name> [<password>]`,
- sr: `The SR command lets you restart the server. Syntax: sr [<reason>]`,
+ // sr: `The SR command lets you restart the server. Syntax: sr [<reason>]`,
  ss: `The SS command lets you shutdown the server. Syntax: ss [<reason>]`,
  ua: `The UA command lets you add a new user. Syntax: ua <name> [<password>]`,
  ud: `The UD command lets you demote a user to a regular user. Syntax: ud <name>`,
