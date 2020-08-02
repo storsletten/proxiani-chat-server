@@ -70,6 +70,7 @@ class Server extends net.Server {
    this.authorizedClients.delete(client)
    if (!client.destroySilently) this.sendMessage({ channel: 'disconnected', message: `${user.name} disconnected.` });
   });
+  client.setKeepAlive(true, 60000);
   this.emit('authorizedConnection', client);
  }
 
