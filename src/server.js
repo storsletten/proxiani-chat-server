@@ -3,7 +3,8 @@ const fs = require('fs');
 const config = require('./config.js');
 const commands = require('./commands.js');
 
-const ServerBase = config.tls ? require('tls').Server : require('net').Server;
+const secureServer = Boolean(config.tls);
+const ServerBase = secureServer ? require('tls').Server : require('net').Server;
  
 class Server extends ServerBase {
  constructor() {
@@ -19,7 +20,8 @@ class Server extends ServerBase {
   this.authorizedClients = new Set();
   this.authorizeTimeout = 30000;
   this.encoding = 'utf8';
-  this.on('connection', client => this.handleConnection({ client }));
+  this.on(secureServer ? 'secureConnection' : 'connection', client => this.handleConnection({ client }));
+  secureServer && this.setSecureContext({ cert: fs.readFileSync(this.config.tlsCrtPath), key: fs.readFileSync(this.config.tlsKeyPath) });
   this.config.listen && this.listen(this.config.listen);
  }
 
