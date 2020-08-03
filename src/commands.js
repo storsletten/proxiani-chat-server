@@ -257,7 +257,7 @@ const commands = {
   info.push(`${user.name}${user.admin ? ' (admin)' : ''}`);
   for (let xClient of this.authorizedClients) {
    if (xClient.user === user) {
-    info.push(`  Connected from: ${xClient.remoteAddress}`);
+    info.push(`  Connected from: ${xClient.remoteAddress.match(/^::ffff:\d+\.\d+\.\d+\.\d+$/) ? xClient.remoteAddress.slice(7) : xClient.remoteAddress}`);
     break;
    }
   }
