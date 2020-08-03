@@ -1,7 +1,7 @@
+*.crt
+*.key
 node_modules/
 config.json
 desktop.ini
 New commits.txt
 Publish.bat
-server.crt
-server.key
