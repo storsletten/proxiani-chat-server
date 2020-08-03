@@ -10,6 +10,7 @@ const helpTopics = {
  pw: `The PW command lets you change your password. Syntax: pw [<password>]`,
  quit: `The Q command instructs the server to terminate your connection. Syntax: q`,
  si: `The SI command lets you peruse information about the server. Syntax: si`,
+ version: `The V command lets you see the server version.`,
  who: `The W command lets you see who is currently connected to the server. Syntax: w [<name>]`,
 };
 
@@ -207,7 +208,7 @@ const commands = {
   client.destroy();
  },
  si: function({ client }) {
-  client.write(`${this.metadata.name} version ${this.metadata.version}.\n`);
+  commands.v.call(this, { client });
   client.write(`The server has been up since ${this.startdate.toString()}.\n`);
  },
  ss: function({ client, argstr }) {
@@ -330,6 +331,9 @@ const commands = {
   }
   return client.write(`Found no user that exactly matches that name.\n`);
  },
+ v: function({ client }) {
+  client.write(`${this.metadata.name.split(/[ -]/).map(s => s.length > 1 ? `${s[0].toUpperCase()}${s.slice(1)}` : s).join(' ')} version ${this.metadata.version}.\n`);
+ },
  w: function({ client, argstr }) {
   const data = argstr && argstr.trim();
   if (!data) return client.write(`${this.authorizedClients.size === 1 ? 'One user is' : `${this.authorizedClients.size} users are`} currently connected: ${Array.from(this.authorizedClients).map(xClient => xClient.user.name).sort().join(', ')}.\n`);
@@ -346,6 +350,8 @@ const commandAliases = {
  help: 'h',
  kick: 'k',
  quit: 'q',
+ ver: 'v',
+ version: 'v',
  who: 'w',
 };
 for (let alias in commandAliases) {
