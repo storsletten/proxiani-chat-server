@@ -257,7 +257,7 @@ const commands = {
   info.push(`${user.name}${user.admin ? ' (admin)' : ''}`);
   for (let xClient of this.authorizedClients) {
    if (xClient.user === user) {
-    info.push(`  Connected from: ${xClient.address().address}`);
+    info.push(`  Connected from: ${xClient.remoteAddress}`);
     break;
    }
   }

@@ -45,7 +45,7 @@ class Server extends ServerBase {
   encoding && client.setEncoding(encoding);
   client.bufferedData = '';
   this.authorize({ client }).then(({ user }) => this.handleAuthorizedConnection({ client, user })).catch(({ message }) => {
-   this.sendMessage({ channel: 'debug', message: `Authentication failed from ${client.address().address}: ${message}` });
+   this.sendMessage({ channel: 'debug', message: `Authentication failed from ${client.remoteAddress}: ${message}` });
    if (!client.destroyed) {
     client.write(`PCS: Disconnect\n`);
     client.destroy();
