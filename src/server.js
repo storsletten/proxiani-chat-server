@@ -62,8 +62,7 @@ class Server extends ServerBase {
   client.user = user;
   const existingClient = this.findConnectedUser({ name: user.name, exactMatch: true });
   if (existingClient) {
-   existingClient.write(`*** Switching your chat server session to a new port ***\n`);
-   existingClient.write(`PCS: Disconnect\n`);
+   existingClient.write(`*** Switching your chat server session to a new port ***\nPCS: Disconnect\n`);
    existingClient.destroySilently = true;
    existingClient.destroy();
    this.sendMessage({ channel: 'connected', message: `${user.name} reconnected.` });
