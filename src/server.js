@@ -222,11 +222,12 @@ class Server extends ServerBase {
   const isEmote = message.startsWith(':');
   if (isEmote) message = message.slice(1);
   const gender = (typeof from === 'object' && from.user.gender) ? from.user.gender : 'neuter';
- const data = `${channel ? `[CM | ${channel}] ` : ''}${name ? `${name}${isEmote ? ` ${message}` : `: ${message}`}` : message}\n`;
+  const emoteData = isEmote ? `#$#soundpack emote | ${gender} | ${message.split('"').filter((s, i) => !(i % 2)).join(' ')}\n` : '';
+  const data = `${channel ? `[CM | ${channel}] ` : ''}${name ? `${name}${isEmote ? ` ${message}` : `: ${message}`}` : message}\n`;
   this.authorizedClients.forEach(client => {
    if (!excludedClients.includes(client) && (!channel || client.user.channels.includes(channel))) {
     client.write(data);
-    if (isEmote && client.soundpack) client.write(`#$#soundpack emote | ${gender} | ${message}\n`);
+    if (isEmote && client.soundpack) client.write(emoteData);
    }
   });
  }
@@ -245,7 +246,7 @@ class Server extends ServerBase {
    to.write(`[PM | ${name}] ${name}${data}`);
    if (isEmote) {
     const gender = (typeof from === 'object' && from.user.gender) ? from.user.gender : 'neuter';
-    const emoteData = `#$#soundpack emote | ${gender} | ${message}\n`;
+    const emoteData = `#$#soundpack emote | ${gender} | ${message.split('"').filter((s, i) => !(i % 2)).join(' ')}\n`;
     if (typeof from === 'object' && from.soundpack) from.write(emoteData);
     if (to.soundpack) to.write(emoteData);
    }
