@@ -18,7 +18,7 @@ class Server extends ServerBase {
   this.adminChannels = ['admin', 'administrator', 'administrators', 'error', 'debug'];
   this.connectedClients = new Set();
   this.authorizedClients = new Set();
-  this.authorizeTimeout = 30000;
+  this.authorizeTimeout = (secureServer ? 120000 : 30000);
   this.encoding = 'utf8';
   this.on(secureServer ? 'secureConnection' : 'connection', client => this.handleConnection({ client }));
   secureServer && this.setSecureContext({ cert: fs.readFileSync(this.config.tlsCrtPath), key: fs.readFileSync(this.config.tlsKeyPath) });
