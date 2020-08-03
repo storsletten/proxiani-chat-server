@@ -5,6 +5,7 @@ const helpTopics = {
  cs: `The CS command lets you subscribe to a channel. Syntax: cs [<channel name>]`,
  cu: `The CU command lets you unsubscribe from a channel. Syntax: cu <channel name>`,
  cw: `the CW command lets you see who is watching a channel that you are subscribed to. Syntax: cw <channel name>`,
+ gender: `The GENDER command lets you set your gender. Syntax: gender [<gender>]`,
  help: `The H command lets you see help topics. Syntax: h [<topic name>]`,
  pm: `The PM command sends a private message to another user. Syntax: pm <recipient name> [<message>]`,
  pw: `The PW command lets you change your password. Syntax: pw [<password>]`,
@@ -17,6 +18,7 @@ const helpTopics = {
 const adminHelpTopics = {
  ban: `The B command lets you ban or unban a user. Syntax: b <name> [<reason>]. If reason is not provided and the user is already banned, then the user will be unbanned.`,
  cw: `the CW command lets you see who is watching a channel. Syntax: cw <channel name>`,
+ gender: `The GENDER command lets you set the gender for someone. Syntax: gender <name> [<gender>]`,
  kick: `The K command lets you kick another user off the server. Syntax: k <name> [<reason>]`,
  pw: `The PW command lets you set a new password for a user. Syntax: pw <name> [<password>]`,
  // sr: `The SR command lets you restart the server. Syntax: sr [<reason>]`,
@@ -31,6 +33,9 @@ const adminHelpTopics = {
 };
 
 const commands = {
+ '#$#register_soundpack': function({ client, argstr }) {
+  client.soundpack = argstr;
+ },
  b: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
   const data = argstr && argstr.match(/^\s*([^\s]+)(\s+(.+))?$/);
@@ -132,6 +137,32 @@ const commands = {
    }
    client.write(`You are not subscribed to that channel.\n`);
   }
+ },
+ gender: function({ client, argstr }) {
+  if (client.user.admin) {
+   const data = argstr && argstr.match(/^\s*([^\s]+)(\s+(.+))?$/);
+   if (!data) return client.write(`Syntax: gender <name> [<gender>]\n`);
+   const gender = data[3] ? data[3].trim().toLowerCase() : '';
+   if (gender.length > 50) return client.write(`Gender can't be longer than 50 characters.\n`);
+   else if (gender.match(/[^a-z]/)) return client.write(`Gender can only contain letters A through Z.\n`);
+   const user = this.findUser({ name: data[1], exactMatch: true });
+   if (!user) return client.write(`Found no user that exactly matches that name.\n`);
+   if (gender) user.gender = gender;
+   else delete user.gender;
+   if (user === client.user) client.write(`Your gender is now ${gender || 'unset'}.\n`);
+   else {
+    client.write(`Gender for ${user.name} is now ${gender || 'unset'}.\n`);
+    this.sendMessage({ channel: 'admin', from: 'System', message: `${client.user.name} changed the gender for ${user.name}.`, excludedClients: [client] });
+   }
+  } else {
+   const gender = argstr ? argstr.trim().toLowerCase() : '';
+   if (gender.length > 50) return client.write(`Gender can't be longer than 50 characters.\n`);
+   else if (gender.match(/[^a-z]/)) return client.write(`Gender can only contain letters A through Z.\n`);
+   if (gender) client.user.gender = gender;
+   else delete client.user.gender;
+   client.write(`Gender is now ${gender || 'unset'}.\n`);
+  }
+  this.updateConfigFile();
  },
  h: function({ client, argstr }) {
   const data = argstr && argstr.trim().toLowerCase();
@@ -261,7 +292,8 @@ const commands = {
     break;
    }
   }
-  info.push(`  Channels: ${user.channels.sort().join(', ')}`);
+  info.push(`  Gender: ${user.gender || 'Not set'}`);
+  info.push(`  Channels: ${user.channels.sort().join(', ') || 'Not set'}`);
   if (user.banned) {
    info.push(`  Banned: Yes`);
    if (user.banned.by) info.push(`  Banned by: ${user.banned.by}`);
@@ -346,6 +378,7 @@ const commands = {
 };
 
 const commandAliases = {
+ '#$#unregister_soundpack': '#$#register_soundpack',
  ban: 'b',
  help: 'h',
  kick: 'k',

@@ -219,13 +219,16 @@ class Server extends ServerBase {
   excludedClients = [],
  }) {
   const name = (typeof from === 'object' ? from.user.name : from);
-  if (channel) {
-   const data = `[CM | ${channel}] ${name ? `${name}${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}` : message}\n`;
-   this.authorizedClients.forEach(client => !excludedClients.includes(client) && client.user.channels.includes(channel) && client.write(data));
-  } else {
-   const data = `${name ? `${name}${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}` : message}\n`;
-   this.authorizedClients.forEach(client => !excludedClients.includes(client) && client.write(data));
-  }
+  const isEmote = message.startsWith(':');
+  if (isEmote) message = message.slice(1);
+  const gender = (typeof from === 'object' && from.user.gender) ? from.user.gender : 'neuter';
+ const data = `${channel ? `[CM | ${channel}] ` : ''}${name ? `${name}${isEmote ? ` ${message}` : `: ${message}`}` : message}\n`;
+  this.authorizedClients.forEach(client => {
+   if (!excludedClients.includes(client) && (!channel || client.user.channels.includes(channel))) {
+    client.write(data);
+    if (isEmote && client.soundpack) client.write(`#$#soundpack emote | ${gender} | ${message}\n`);
+   }
+  });
  }
 
  sendPrivateMessage({
@@ -234,12 +237,17 @@ class Server extends ServerBase {
   to,
  }) {
   if (to) {
-   const data = `${message.startsWith(':') ? ` ${message.slice(1)}` : `: ${message}`}\n`;
-   if (from) {
-    from.write(`[PM | ${to.user.name}] ${from.user.name}${data}`);
-    to.write(`[PM | ${from.user.name}] ${from.user.name}${data}`);
-   } else {
-    to.write(`[PM | System] Server${data}`);
+   const isEmote = message.startsWith(':');
+   if (isEmote) message = message.slice(1);
+   const name = (typeof from === 'object' ? (from.user.name || 'Unnamed') : (from || 'System'));
+   const data = `${isEmote ? ` ${message}` : `: ${message}`}\n`;
+   if (typeof from === 'object') from.write(`[PM | ${to.user.name || 'Unnamed'}] ${name}${data}`);
+   to.write(`[PM | ${name}] ${name}${data}`);
+   if (isEmote) {
+    const gender = (typeof from === 'object' && from.user.gender) ? from.user.gender : 'neuter';
+    const emoteData = `#$#soundpack emote | ${gender} | ${message}\n`;
+    if (typeof from === 'object' && from.soundpack) from.write(emoteData);
+    if (to.soundpack) to.write(emoteData);
    }
   }
  }
