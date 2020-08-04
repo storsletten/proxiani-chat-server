@@ -1,5 +1,6 @@
 *.crt
 *.key
+*.pem
 Commit.bat
 config.json
 desktop.ini

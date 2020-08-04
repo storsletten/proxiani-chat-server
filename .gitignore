@@ -1,5 +1,6 @@
 *.crt
 *.key
+*.pem
 node_modules/
 config.json
 desktop.ini
