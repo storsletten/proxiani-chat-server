@@ -11,6 +11,7 @@ const defaultConfig = {
  users: {
   admin: { admin: 1, },
  },
+ quotes: [],
 };
 
 if (!fs.existsSync(defaultConfig.path)) fs.writeFileSync(defaultConfig.path, JSON.stringify(defaultConfig, null, 1));

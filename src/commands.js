@@ -23,6 +23,9 @@ const adminHelpTopics = {
  gender: `The GENDER command lets you set the gender for someone. Syntax: gender <name> [<gender>]`,
  kick: `The K command lets you kick another user off the server. Syntax: k <name> [<reason>]`,
  pw: `The PW command lets you set a new password for a user. Syntax: pw <name> [<password>]`,
+ qa: `The QA command lets you add a new quote to the list of random quotes used when users send an empty message on a channel. Syntax: qa <quote>`,
+ ql: `The QL command lets you see the list of random quotes that have been added. Syntax: ql [<phrase>]`,
+ qr: `The QR command lets you remove a quote from the list of random quotes used when users send an empty message on a channel. Syntax: qr <phrase>`,
  // sr: `The SR command lets you restart the server. Syntax: sr [<reason>]`,
  ss: `The SS command lets you shutdown the server. Syntax: ss [<reason>]`,
  ua: `The UA command lets you add a new user. Syntax: ua <name> [<password>]`,
@@ -79,7 +82,7 @@ const commands = {
   const lcChannel = data[1].toLowerCase();
   if (this.systemChannels.includes(lcChannel) && client.user.channels.includes(lcChannel)) return client.write(`That channel is reserved for system notifications.\n`);
   for (let i=0; i<client.user.channels.length; i++) {
-   if (client.user.channels[i].startsWith(lcChannel) && !this.systemChannels.includes(client.user.channels[i])) return this.sendMessage({ channel: client.user.channels[i], from: client, message: data[3] || `:makes some noise.` });
+   if (client.user.channels[i].startsWith(lcChannel) && !this.systemChannels.includes(client.user.channels[i])) return this.sendMessage({ channel: client.user.channels[i], from: client, message: data[3] || (this.quotes.length && this.quotes[Math.floor(Math.random() * this.quotes.length)]) || `:makes some noise.` });
   }
   client.write(`You are not subscribed to that channel.\n`);
  },
@@ -262,6 +265,47 @@ const commands = {
  q: function({ client }) {
   client.write(`PCS: Disconnect\n`);
   client.destroy();
+ },
+ qa: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  const quote = argstr && argstr.trim();
+  if (!quote) return client.write(`Syntax: qa <quote>.\n`);
+  const lcQuote = quote.toLowerCase();
+  const exists = this.quotes.findIndex(q => q.toLowerCase() === lcQuote);
+  if (exists !== -1) return client.write(`That quote is already added.\n`);
+  this.quotes.push(quote);
+  client.write(`Added quote: ${quote}\n`);
+  this.updateConfigFile();
+ },
+ ql: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  else if (this.quotes.length === 0) return client.write(`The list of random quotes is empty.\n`);
+  const phrase = argstr && argstr.trim();
+  let quotes;
+  if (phrase) {
+   quotes = [];
+   const lcPhrase = phrase.toLowerCase();
+   this.quotes.forEach(q => q.toLowerCase().indexOf(lcPhrase) !== -1 && quotes.push(q));
+  }
+  else quotes = this.quotes;
+  if (quotes.length) client.write(`${quotes.length === 1 ? '1 quote' : `${quotes.length} quotes`}:\n${quotes.map(q => `- ${q}`).join("\n")}\n`);
+  else client.write(`Found no matching quotes.\n`);
+ },
+ qr: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  else if (this.quotes.length === 0) return client.write(`There are no quotes to remove.\n`);
+  const phrase = argstr && argstr.trim();
+  if (!phrase) return client.write(`Syntax: qr <phrase>\n`);
+  const lcPhrase = phrase.toLowerCase();
+  for (let i=0; i<this.quotes.length; i++) {
+   if (this.quotes[i].toLowerCase().indexOf(lcPhrase) !== -1) {
+    client.write(`Removed quote: ${this.quotes[i]}\n`);
+    this.quotes.splice(i, 1);
+    this.updateConfigFile();
+    return;
+   }
+  }
+  client.write(`That phrase did not match any of the stored quotes.\n`);
  },
  si: function({ client }) {
   commands.v.call(this, { client });

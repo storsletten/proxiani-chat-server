@@ -14,6 +14,7 @@ class Server extends ServerBase {
   this.version = this.metadata.version.split('.').map(v => parseInt(v));
   this.config = config;
   this.users = this.config.users;
+  this.quotes = this.config.quotes;
   this.systemChannels = ['connected', 'disconnected', 'system'];
   this.adminChannels = ['admin', 'administrator', 'administrators', 'error', 'debug'];
   this.connectedClients = new Set();
