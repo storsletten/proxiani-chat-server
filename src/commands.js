@@ -142,7 +142,7 @@ const commands = {
  ev: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
   const data = argstr && argstr.trim();
-  if (!data) return client.write(`Syntax: ev <expression>`);
+  if (!data) return client.write(`Syntax: ev <expression>\n`);
   const vmOptions = { timeout: 500 };
   const vmVars = Object.create(null);
   vmVars.server = this;
