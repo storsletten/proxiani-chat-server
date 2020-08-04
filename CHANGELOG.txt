@@ -1,2 +1,5 @@
+Version 1.0.2, released 2020-08-04:
+* The GENDER command will now autocomplete male and female.
+
 Version 1.0.1, released 2020-08-04:
 * Added EV command which lets admins execute JS code on the server.
