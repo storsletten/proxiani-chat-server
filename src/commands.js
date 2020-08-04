@@ -160,9 +160,13 @@ const commands = {
   if (client.user.admin) {
    const data = argstr && argstr.match(/^\s*([^\s]+)(\s+(.+))?$/);
    if (!data) return client.write(`Syntax: gender <name> [<gender>]\n`);
-   const gender = data[3] ? data[3].trim().toLowerCase() : '';
+   let gender = data[3] ? data[3].trim().toLowerCase() : '';
    if (gender.length > 50) return client.write(`Gender can't be longer than 50 characters.\n`);
    else if (gender.match(/[^a-z]/)) return client.write(`Gender can only contain letters A through Z.\n`);
+   if (gender) {
+    if ('male'.startsWith(gender)) gender = 'male';
+    else if ('female'.startsWith(gender)) gender = 'female';
+   }
    const user = this.findUser({ name: data[1], exactMatch: true });
    if (!user) return client.write(`Found no user that exactly matches that name.\n`);
    if (gender) user.gender = gender;
@@ -173,9 +177,13 @@ const commands = {
     this.sendMessage({ channel: 'admin', from: 'System', message: `${client.user.name} changed the gender for ${user.name}.`, excludedClients: [client] });
    }
   } else {
-   const gender = argstr ? argstr.trim().toLowerCase() : '';
+   let gender = argstr ? argstr.trim().toLowerCase() : '';
    if (gender.length > 50) return client.write(`Gender can't be longer than 50 characters.\n`);
    else if (gender.match(/[^a-z]/)) return client.write(`Gender can only contain letters A through Z.\n`);
+   if (gender) {
+    if ('male'.startsWith(gender)) gender = 'male';
+    else if ('female'.startsWith(gender)) gender = 'female';
+   }
    if (gender) client.user.gender = gender;
    else delete client.user.gender;
    client.write(`Gender is now ${gender || 'unset'}.\n`);
