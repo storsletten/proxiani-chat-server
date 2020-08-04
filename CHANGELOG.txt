@@ -1,3 +1,6 @@
+Version 1.0.3, released 2020-08-04:
+* Added QA, QL, and QR commands for admins to manage the list of random quotes that is used when users send empty messages on channels.
+
 Version 1.0.2, released 2020-08-04:
 * The GENDER command will now autocomplete male and female.
 
