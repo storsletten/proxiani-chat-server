@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const vm = require('vm');
 
 const helpTopics = {
  cm: `The CM command sends a message on a channel. Syntax: cm <channel name> [<message>]`,
@@ -18,6 +19,7 @@ const helpTopics = {
 const adminHelpTopics = {
  ban: `The B command lets you ban or unban a user. Syntax: b <name> [<reason>]. If reason is not provided and the user is already banned, then the user will be unbanned.`,
  cw: `the CW command lets you see who is watching a channel. Syntax: cw <channel name>`,
+ eval: `The EV command lets you run JS code on the server. The server object is the instance of the server, and the client object is your own socket on the server. Syntax: ev <expression>`,
  gender: `The GENDER command lets you set the gender for someone. Syntax: gender <name> [<gender>]`,
  kick: `The K command lets you kick another user off the server. Syntax: k <name> [<reason>]`,
  pw: `The PW command lets you set a new password for a user. Syntax: pw <name> [<password>]`,
@@ -136,6 +138,23 @@ const commands = {
    }
    client.write(`You are not subscribed to that channel.\n`);
   }
+ },
+ ev: function({ client, argstr }) {
+  if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
+  const data = argstr && argstr.trim();
+  if (!data) return client.write(`Syntax: ev <expression>`);
+  const vmOptions = { timeout: 500 };
+  const vmVars = Object.create(null);
+  vmVars.server = this;
+  vmVars.client = client;
+  try {
+   let out = vm.runInNewContext(data, vmVars, vmOptions);
+   if (out === undefined) out = '';
+   else if (typeof out === 'object') out = JSON.stringify(out, null, 1);
+   else if (typeof out === 'boolean') out = out ? 'true' : 'false';
+   client.write(`${out}\n`);
+  }
+  catch (error) { client.write(`${error.stack.split("\n").filter(s => !s.startsWith('    at ')).join("\n")}\n`); }
  },
  gender: function({ client, argstr }) {
   if (client.user.admin) {
@@ -378,6 +397,7 @@ const commands = {
 const commandAliases = {
  '#$#unregister_soundpack': '#$#register_soundpack',
  ban: 'b',
+ eval: 'ev',
  help: 'h',
  kick: 'k',
  quit: 'q',
