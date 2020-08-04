@@ -149,9 +149,9 @@ const commands = {
   vmVars.client = client;
   try {
    let out = vm.runInNewContext(data, vmVars, vmOptions);
-   if (out === undefined) out = '';
-   else if (typeof out === 'object') out = JSON.stringify(out, null, 1);
+   if (out === undefined) out = 'undefined';
    else if (typeof out === 'boolean') out = out ? 'true' : 'false';
+   else if (typeof out === 'object' || typeof out === 'string') out = JSON.stringify(out, null, 1);
    client.write(`${out}\n`);
   }
   catch (error) { client.write(`${error.stack.split("\n").filter(s => !s.startsWith('    at ')).join("\n")}\n`); }
