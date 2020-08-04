@@ -1,6 +1,6 @@
 {
   "name": "proxiani-chat-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Chat server for Proxiani",
   "main": "./src/main.js",
   "author": "Martin Storsletten",
