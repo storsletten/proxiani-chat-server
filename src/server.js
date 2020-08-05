@@ -15,7 +15,7 @@ class Server extends ServerBase {
   this.config = config;
   this.users = this.config.users;
   this.quotes = this.config.quotes;
-  this.systemChannels = ['connected', 'disconnected', 'system'];
+  this.systemChannels = ['connected', 'disconnected', 'system', 'error', 'debug'];
   this.adminChannels = ['admin', 'administrator', 'administrators', 'error', 'debug'];
   this.connectedClients = new Set();
   this.authorizedClients = new Set();
@@ -142,7 +142,7 @@ class Server extends ServerBase {
     user.channels = [...this.systemChannels];
     if (user.admin) user.channels.push('admin');
    }
-   else if (!user.admin && user.channels.length > 0) {
+   if (!user.admin && user.channels.length > 0) {
     this.adminChannels.forEach(channel => {
      const i = user.channels.indexOf(channel);
      if (i !== -1) user.channels.splice(i, 1);
