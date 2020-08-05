@@ -3,8 +3,8 @@ const vm = require('vm');
 
 const helpTopics = {
  cm: `The CM command sends a message on a channel. Syntax: cm <channel name> [<message>]`,
- cs: `The CS command lets you subscribe to a channel. Syntax: cs [<channel name>]`,
- cu: `The CU command lets you unsubscribe from a channel. Syntax: cu <channel name>`,
+ cs: `The CS command lets you subscribe to channels. Syntax: cs [<channel name(s separated by space)>]`,
+ cu: `The CU command lets you unsubscribe from channels. Syntax: cu [<channel name(s separated by space)>]`,
  cw: `the CW command lets you see who is watching a channel that you are subscribed to. Syntax: cw <channel name>`,
  gender: `The GENDER command lets you set your gender. Syntax: gender [<gender>]`,
  help: `The H command lets you see help topics. Syntax: h [<topic name>]`,
@@ -87,34 +87,31 @@ const commands = {
   client.write(`You are not subscribed to that channel.\n`);
  },
  cs: function({ client, argstr }) {
-  const lcChannel = argstr && argstr.trim().toLowerCase();
-  if (!lcChannel) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
-  else if (!lcChannel.match(/^[a-z0-9]{1,50}$/)) return client.write(`Channel names can only contain letters and numbers, and must not exceed 50 characters.\n`);
-  else if (!client.user.admin && this.adminChannels.includes(lcChannel)) return client.write(`You don't have sufficient privileges to subscribe to that channel.\n`);
-  const i = client.user.channels.indexOf(lcChannel);
-  if (i === -1) {
-   client.user.channels.push(lcChannel);
-   client.write(`You subscribe to the ${lcChannel} channel.\n`);
-   this.sendMessage({ channel: lcChannel, from: 'System', message: `${client.user.name} is now subscribed to this channel.`, excludedClients: [client] });
-   this.updateConfigFile();
-  } else {
-   client.write(`You are already subscribed to ${lcChannel}.\n`);
+  const data = argstr && argstr.trim().toLowerCase();
+  if (!data) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
+  else if (!`${data} `.match(/^([a-z0-9]{1,50}\s+)+$/)) return client.write(`Channel names can only contain letters and numbers, and must not exceed 50 characters.\n`);
+  const reqChannels = Array.from(new Set(data.split(/\s+/))).sort();
+  const newChannels = reqChannels.filter(c => !client.user.channels.includes(c));
+  if (newChannels.length === 0) return client.write(`You're already subscribed to ${reqChannels === 1 ? `the ${reqChannels[0]} channel` : `the channels ${reqChannels.join(', ')}`}.\n`);
+  if (!client.user.admin) {
+   const denied = newChannels.filter(c => this.adminChannels.includes(c));
+   if (denied.length) return client.write(`You don't have sufficient privileges to subscribe to ${denied.length === 1 ? `the ${denied[0]} channel` : `the channels ${denied.join(', ')}`}.\n`);
   }
+  client.user.channels.push(...newChannels);
+  client.write(`You subscribe to ${newChannels.length === 1 ? `the ${newChannels[0]} channel` : `the channels ${newChannels.join(', ')}`}.\n`);
+  newChannels.forEach(channel => this.sendMessage({ channel, from: 'System', message: `${client.user.name} is now subscribed to this channel.`, excludedClients: [client] }));
+  this.updateConfigFile();
  },
  cu: function({ client, argstr }) {
-  const lcChannel = argstr && argstr.trim().toLowerCase();
-  if (!lcChannel) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
-  for (let i=0; i<client.user.channels.length; i++) {
-   const channel = client.user.channels[i];
-   if (lcChannel === channel || (channel.startsWith(lcChannel) && !this.systemChannels.includes(channel))) {
-    client.user.channels.splice(i, 1);
-    client.write(`You unsubscribe from the ${channel} channel.\n`);
-    this.sendMessage({ channel, from: 'System', message: `${client.user.name} unsubscribed from this channel.`, excludedClients: [client] });
-    this.updateConfigFile();
-    return;
-   }
-  }
-  client.write(`Found no such channel that you can unsubscribe from.\n`);
+  const data = argstr && argstr.trim().toLowerCase();
+  if (!data) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
+  const reqChannels = Array.from(new Set(data.split(/\s+/))).sort();
+  const remChannels = reqChannels.filter(c => client.user.channels.includes(c));
+  if (remChannels.length === 0) return client.write(`You're not subscribed to ${reqChannels === 1 ? `the ${reqChannels[0]} channel` : `the channels ${reqChannels.join(', ')}`}.\n`);
+  client.user.channels = client.user.channels.filter(c => !remChannels.includes(c));
+  client.write(`You unsubscribe from ${remChannels.length === 1 ? `the ${remChannels[0]} channel` : `the channels ${remChannels.join(', ')}`}.\n`);
+  remChannels.forEach(channel => this.sendMessage({ channel, from: 'System', message: `${client.user.name} is now unsubscribed from this channel.`, excludedClients: [client] }));
+  this.updateConfigFile();
  },
  cw: function({ client, argstr }) {
   const lcChannel = argstr && argstr.trim().toLowerCase();
