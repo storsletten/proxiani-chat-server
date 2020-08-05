@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const vm = require('vm');
+const { englishList } = require('./utils.js');
 
 const helpTopics = {
  cm: `The CM command sends a message on a channel. Syntax: cm <channel name> [<message>]`,
@@ -88,28 +89,28 @@ const commands = {
  },
  cs: function({ client, argstr }) {
   const data = argstr && argstr.trim().toLowerCase();
-  if (!data) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
+  if (!data) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${englishList(client.user.channels.sort())}.\n`);
   else if (!`${data} `.match(/^([a-z0-9]{1,50}\s+)+$/)) return client.write(`Channel names can only contain letters and numbers, and must not exceed 50 characters.\n`);
   const reqChannels = Array.from(new Set(data.split(/\s+/))).sort();
   const newChannels = reqChannels.filter(c => !client.user.channels.includes(c));
-  if (newChannels.length === 0) return client.write(`You're already subscribed to ${reqChannels === 1 ? `the ${reqChannels[0]} channel` : `the channels ${reqChannels.join(', ')}`}.\n`);
+  if (newChannels.length === 0) return client.write(`You're already subscribed to ${reqChannels === 1 ? `the ${reqChannels[0]} channel` : `the channels ${englishList(reqChannels)}`}.\n`);
   if (!client.user.admin) {
    const denied = newChannels.filter(c => this.adminChannels.includes(c));
-   if (denied.length) return client.write(`You don't have sufficient privileges to subscribe to ${denied.length === 1 ? `the ${denied[0]} channel` : `the channels ${denied.join(', ')}`}.\n`);
+   if (denied.length) return client.write(`You don't have sufficient privileges to subscribe to ${denied.length === 1 ? `the ${denied[0]} channel` : `the channels ${englishList(denied, true)}`}.\n`);
   }
   client.user.channels.push(...newChannels);
-  client.write(`You subscribe to ${newChannels.length === 1 ? `the ${newChannels[0]} channel` : `the channels ${newChannels.join(', ')}`}.\n`);
+  client.write(`You subscribe to ${newChannels.length === 1 ? `the ${newChannels[0]} channel` : `the channels ${englishList(newChannels)}`}.\n`);
   newChannels.forEach(channel => this.sendMessage({ channel, from: 'System', message: `${client.user.name} is now subscribed to this channel.`, excludedClients: [client] }));
   this.updateConfigFile();
  },
  cu: function({ client, argstr }) {
   const data = argstr && argstr.trim().toLowerCase();
-  if (!data) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${client.user.channels.sort().join(', ')}.\n`);
+  if (!data) return client.write(client.user.channels.length === 0 ? `You are not subscribed to any channels.\n` : `You are subscribed to ${client.user.channels.length === 1 ? '1 channel' : `${client.user.channels.length} channels`}: ${englishList(client.user.channels.sort())}.\n`);
   const reqChannels = Array.from(new Set(data.split(/\s+/))).sort();
   const remChannels = reqChannels.filter(c => client.user.channels.includes(c));
-  if (remChannels.length === 0) return client.write(`You're not subscribed to ${reqChannels === 1 ? `the ${reqChannels[0]} channel` : `the channels ${reqChannels.join(', ')}`}.\n`);
+  if (remChannels.length === 0) return client.write(`You're not subscribed to ${reqChannels === 1 ? `the ${reqChannels[0]} channel` : `the channels ${englishList(reqChannels, true)}`}.\n`);
   client.user.channels = client.user.channels.filter(c => !remChannels.includes(c));
-  client.write(`You unsubscribe from ${remChannels.length === 1 ? `the ${remChannels[0]} channel` : `the channels ${remChannels.join(', ')}`}.\n`);
+  client.write(`You unsubscribe from ${remChannels.length === 1 ? `the ${remChannels[0]} channel` : `the channels ${englishList(remChannels)}`}.\n`);
   remChannels.forEach(channel => this.sendMessage({ channel, from: 'System', message: `${client.user.name} is now unsubscribed from this channel.`, excludedClients: [client] }));
   this.updateConfigFile();
  },
@@ -122,7 +123,7 @@ const commands = {
     if (xClient.user.channels.includes(lcChannel)) users.push(xClient.user.name);
    }
    if (users.length === 0) client.write(`Nobody is watching the ${lcChannel} channel.\n`);
-   else client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${lcChannel} channel: ${users.sort().join(', ')}.\n`);
+   else client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${lcChannel} channel: ${englishList(users.sort())}.\n`);
   } else {
    if (client.user.channels.length === 0) return client.write(`You are not subscribed to any channels.\n`);
    for (let i=0; i<client.user.channels.length; i++) {
@@ -133,7 +134,7 @@ const commands = {
       if (xClient.user.channels.includes(channel)) users.push(xClient.user.name);
      }
      if (users.length === 0) return client.write(`Nobody is currently watching the ${channel} channel.\n`);
-     else return client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${channel} channel: ${users.sort().join(', ')}.\n`);
+     else return client.write(`${users.length === 1 ? 'One user is' : `${users.length} users are`} watching the ${channel} channel: ${englishList(users.sort())}.\n`);
     }
    }
    client.write(`You are not subscribed to that channel.\n`);
@@ -359,7 +360,7 @@ const commands = {
    }
   }
   info.push(`  Gender: ${user.gender || 'Not set'}`);
-  info.push(`  Channels: ${user.channels.sort().join(', ') || 'Not set'}`);
+  info.push(`  Channels: ${englishList(user.channels.sort()) || 'Not set'}`);
   if (user.banned) {
    info.push(`  Banned: Yes`);
    if (user.banned.by) info.push(`  Banned by: ${user.banned.by}`);
@@ -374,7 +375,7 @@ const commands = {
   const data = argstr && argstr.trim().toLowerCase();
   const users = data ? Object.keys(this.users).filter(username => username.toLowerCase().indexOf(data) !== -1) : Object.keys(this.users);
   if (users.length === 0) return client.write(`Found no users${data ? ' that match' : ''}.\n`);
-  client.write(`Found ${users.length === 1 ? '1 user' : `${users.length} users`}: ${users.sort().join(', ')}.\n`);
+  client.write(`Found ${users.length === 1 ? '1 user' : `${users.length} users`}: ${englishList(users.sort())}.\n`);
  },
  un: function({ client, argstr }) {
   if (!client.user.admin) return client.write(`This command requires admin privileges.\n`);
@@ -434,7 +435,7 @@ const commands = {
  },
  w: function({ client, argstr }) {
   const data = argstr && argstr.trim();
-  if (!data) return client.write(`${this.authorizedClients.size === 1 ? 'One user is' : `${this.authorizedClients.size} users are`} currently connected: ${Array.from(this.authorizedClients).map(xClient => xClient.user.name).sort().join(', ')}.\n`);
+  if (!data) return client.write(`${this.authorizedClients.size === 1 ? 'One user is' : `${this.authorizedClients.size} users are`} currently connected: ${englishList(Array.from(this.authorizedClients).map(xClient => xClient.user.name).sort())}.\n`);
   const connectedClient = this.findConnectedUser({ name: data });
   if (connectedClient) return client.write(`${connectedClient.user.name} is connected.\n`);
   const user = this.findUser({ name: data });
