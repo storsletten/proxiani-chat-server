@@ -1,3 +1,7 @@
+Version 1.0.4, released 2020-08-05:
+* Added error and debug channels to the list of system channels.
+* The CS and CU commands now support list of channel names separated by spaces.
+
 Version 1.0.3, released 2020-08-04:
 * Added QA, QL, and QR commands for admins to manage the list of random quotes that is used when users send empty messages on channels.
 
